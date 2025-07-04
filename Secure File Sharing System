@@ -61,70 +61,52 @@
     <div class="container">
         <h1>Secure File Sharing System</h1>
         <div id="message" class="alert"></div>
-
         <h2>Upload File</h2>
         <input type="file" id="fileInput">
         <input type="text" id="encryptionKey" placeholder="Enter Encryption Key">
         <button onclick="uploadFile()">Upload</button>
-
         <h2>Download File</h2>
         <input type="text" id="fileName" placeholder="Enter File Name to Download">
         <button onclick="downloadFile()">Download</button>
     </div>
-
     <script>
         const files = {};
-
-        // Function to upload a file
         function uploadFile() {
             const fileInput = document.getElementById('fileInput');
             const encryptionKey = document.getElementById('encryptionKey').value;
             const messageDiv = document.getElementById('message');
-
             if (fileInput.files.length === 0 || !encryptionKey) {
                 messageDiv.innerHTML = '<div class="alert alert-danger">Please select a file and enter an encryption key.</div>';
                 return;
             }
-
             const file = fileInput.files[0];
             const reader = new FileReader();
-
             reader.onload = function(event) {
                 const fileData = event.target.result;
                 const encryptedData = CryptoJS.AES.encrypt(fileData, encryptionKey).toString();
                 files[file.name] = encryptedData; // Store encrypted file data
                 messageDiv.innerHTML = '<div class="alert alert-success">File uploaded and encrypted successfully!</div>';
             };
-
             reader.readAsBinaryString(file);
         }
-
-        // Function to download a file
         function downloadFile() {
             const fileName = document.getElementById('fileName').value;
             const encryptionKey = document.getElementById('encryptionKey').value;
             const messageDiv = document.getElementById('message');
-
             if (!fileName || !encryptionKey) {
                 messageDiv.innerHTML = '<div class="alert alert-danger">Please enter a file name and an encryption key.</div>';
                 return;
             }
-
             const encryptedData = files[fileName];
-
             if (!encryptedData) {
                 messageDiv.innerHTML = '<div class="alert alert-danger">File not found.</div>';
                 return;
             }
-
             const decryptedData = CryptoJS.AES.decrypt(encryptedData, encryptionKey).toString(CryptoJS.enc.Utf8);
-
             if (!decryptedData) {
                 messageDiv.innerHTML = '<div class="alert alert-danger">Decryption failed. Check your encryption key.</div>';
                 return;
             }
-
-            // Create a Blob and download the file
             const blob = new Blob([decryptedData], { type: 'application/octet-stream' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
